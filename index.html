@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canine Health Pro - Expert Veterinary Suite</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Custom scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; padding: 0 !important; }
+            .print-card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; page-break-inside: avoid; }
+            .tab-content { display: block !important; }
+            .print-page-break { page-break-before: always; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200 min-h-screen flex flex-col">
+
+    <!-- TOP HEADER / NAV -->
+    <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 no-print shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('tab-dashboard')">
+                <div class="bg-brand-600 text-white p-2.5 rounded-xl flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-dog text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg leading-none text-slate-900 dark:text-white tracking-tight">
+                        Canine Health <span class="bg-brand-100 dark:bg-brand-900/80 text-brand-700 dark:text-brand-300 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">PRO</span>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Veterinary Gold-Standard Clinical Suite</p>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="exportAllData()" title="Export Local Backup JSON" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm transition">
+                    <i class="fa-solid fa-download"></i> <span class="hidden md:inline ml-1 text-xs font-semibold">Backup</span>
+                </button>
+                <label title="Import Backup JSON" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm transition cursor-pointer">
+                    <i class="fa-solid fa-upload"></i> <span class="hidden md:inline ml-1 text-xs font-semibold">Restore</span>
+                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importAllData(event)">
+                </label>
+                <button id="themeToggle" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i>
+                </button>
+                <button onclick="window.print()" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition shadow-xs">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Print Report</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- NAVIGATION BAR -->
+        <div class="border-t border-slate-200 dark:border-slate-700/60 bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto">
+                <nav class="flex space-x-1 sm:space-x-2 py-2 min-w-max" id="navTabs">
+                    <button data-tab="tab-dashboard" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 bg-brand-600 text-white shadow-xs">
+                        <i class="fa-solid fa-chart-pie"></i> Overview
+                    </button>
+                    <button data-tab="tab-bcs" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-weight-scale"></i> BCS Visual Tool
+                    </button>
+                    <button data-tab="tab-vitals" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-heart-pulse"></i> Vitals Evaluator
+                    </button>
+                    <button data-tab="tab-qol" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-notes-medical"></i> Quality of Life (HHHHHMM)
+                    </button>
+                    <button data-tab="tab-food" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-shield-cat"></i> Food Safety
+                    </button>
+                    <button data-tab="tab-triage" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-truck-medical text-red-500"></i> Emergency Triage
+                    </button>
+                    <button data-tab="tab-forms" class="tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700">
+                        <i class="fa-solid fa-folder-open"></i> Forms & Logs
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+        <!-- ================= 1. DASHBOARD OVERVIEW ================= -->
+        <div id="tab-dashboard" class="tab-content active space-y-6">
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-brand-800 to-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-md relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-brand-500/30 text-brand-200 text-xs font-extrabold uppercase px-3 py-1 rounded-full tracking-wider border border-brand-400/30">Clinical Standard Guidance</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mt-3 tracking-tight">Expert Canine Health & Longevity Suite</h2>
+                    <p class="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
+                        Assess body condition, monitor vitals across weight classes, run emergency triage, check food safety, and maintain complete offline health records.
+                    </p>
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        <button onclick="switchTab('tab-triage')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-sm">
+                            <i class="fa-solid fa-truck-medical"></i> Emergency Red Flags
+                        </button>
+                        <button onclick="switchTab('tab-vitals')" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-sm">
+                            <i class="fa-solid fa-stethoscope"></i> Check Vitals
+                        </button>
+                        <button onclick="switchTab('tab-forms')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+                            <i class="fa-solid fa-pen-to-square"></i> Open Logs & Forms
+                        </button>
+                    </div>
+                </div>
+                <i class="fa-solid fa-shield-dog absolute -right-6 -bottom-6 text-9xl text-white/5 pointer-events-none"></i>
+            </div>
+
+            <!-- Quick Metrics Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Ideal BCS Goal</span>
+                        <span class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1 block">4 - 5 <span class="text-xs font-normal text-slate-500">/ 9 scale</span></span>
+                        <span class="text-xs text-brand-600 dark:text-brand-400 font-semibold mt-1 inline-block">Ribs felt, clear waist</span>
+                    </div>
+                    <div class="p-3 bg-brand-50 dark:bg-brand-950 text-brand-600 rounded-xl">
+                        <i class="fa-solid fa-weight-scale text-2xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Body Temp Norm</span>
+                        <span class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1 block">100.0 - 102.5 <span class="text-xs font-normal text-slate-500">°F</span></span>
+                        <span class="text-xs text-emerald-600 font-semibold mt-1 inline-block">37.8°C - 39.2°C</span>
+                    </div>
+                    <div class="p-3 bg-amber-50 dark:bg-amber-950 text-amber-600 rounded-xl">
+                        <i class="fa-solid fa-thermometer text-2xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Saved Health Logs</span>
+                        <span id="dash-log-count" class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1 block">0 <span class="text-xs font-normal text-slate-500">entries</span></span>
+                        <span class="text-xs text-slate-500 font-medium mt-1 inline-block">Stored in LocalStorage</span>
+                    </div>
+                    <div class="p-3 bg-blue-50 dark:bg-blue-950 text-blue-600 rounded-xl">
+                        <i class="fa-solid fa-box-archive text-2xl"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Food Database</span>
+                        <span class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1 block">28+ <span class="text-xs font-normal text-slate-500">items</span></span>
+                        <span class="text-xs text-red-500 font-semibold mt-1 inline-block">Toxins, Caution & Safe</span>
+                    </div>
+                    <div class="p-3 bg-red-50 dark:bg-red-950 text-red-600 rounded-xl">
+                        <i class="fa-solid fa-bone text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Feature Navigation Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- BCS Card -->
+                <div onclick="switchTab('tab-bcs')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer group">
+                    <div class="w-12 h-12 bg-brand-100 dark:bg-brand-900/60 text-brand-600 dark:text-brand-300 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-child-reaching"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Body Condition Score (BCS)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                        Interactive 1–9 assessment with physical palpation cues, rib checks, overhead profile guides, and clinical action recommendations.
+                    </p>
+                    <span class="text-xs font-bold text-brand-600 dark:text-brand-400 mt-4 inline-flex items-center gap-1">
+                        Open Tool <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </span>
+                </div>
+
+                <!-- Food Safety Card -->
+                <div onclick="switchTab('tab-food')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer group">
+                    <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bowl-food"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Searchable Food Safety</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                        Quick reference directory covering fatal toxins (Xylitol, Grapes, Onions), high-fat hazards, allergens, and safe treat alternatives.
+                    </p>
+                    <span class="text-xs font-bold text-amber-600 dark:text-amber-400 mt-4 inline-flex items-center gap-1">
+                        Search Ingredients <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </span>
+                </div>
+
+                <!-- QoL Card -->
+                <div onclick="switchTab('tab-qol')" class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xs hover:shadow-md transition cursor-pointer group">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-300 rounded-xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Quality of Life (HHHHHMM)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                        Evaluates Hurt, Hunger, Hydration, Hygiene, Happiness, Mobility, and More Good Days. Essential for senior or chronic pet care.
+                    </p>
+                    <span class="text-xs font-bold text-purple-600 dark:text-purple-400 mt-4 inline-flex items-center gap-1">
+                        Calculate Score <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 2. BODY CONDITION SCORE (BCS) VISUAL TOOL ================= -->
+        <div id="tab-bcs" class="tab-content space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-weight-scale text-brand-600"></i> Body Condition Score (BCS 1–9)
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Click or slide to select a score on the veterinary 9-point scale.</p>
+                    </div>
+                    <span class="px-3 py-1 bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 rounded-full text-xs font-bold">Clinical Gold Standard</span>
+                </div>
+
+                <!-- BCS Number Selector Grid -->
+                <div class="grid grid-cols-9 gap-1 sm:gap-2 mb-6" id="bcs-selector-grid">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+
+                <!-- Range Slider -->
+                <div class="mb-8 px-2">
+                    <input type="range" id="bcs-slider" min="1" max="9" value="5" step="1" oninput="selectBCS(parseInt(this.value))" class="w-full accent-brand-600 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-xs text-slate-400 font-semibold mt-2">
+                        <span>1 (Emaciated)</span>
+                        <span>3 (Thin)</span>
+                        <span class="text-brand-600 dark:text-brand-400 font-bold">5 (Ideal)</span>
+                        <span>7 (Overweight)</span>
+                        <span>9 (Severely Obese)</span>
+                    </div>
+                </div>
+
+                <!-- BCS Display Card -->
+                <div id="bcs-display-card" class="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="text-center p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs">
+                        <span id="bcs-num-large" class="text-6xl font-black text-brand-600">5</span>
+                        <div id="bcs-category-title" class="text-lg font-bold text-slate-900 dark:text-white mt-1">Ideal Weight</div>
+                        <span id="bcs-category-badge" class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Optimal (4-5)</span>
+                    </div>
+
+                    <div class="md:col-span-2 space-y-4">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-hand"></i> Rib & Spine Palpation Check
+                            </h4>
+                            <p id="bcs-rib-text" class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">Ribs easily palpable with minimal fat cover. Individual ribs felt distinctly without pressuring.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-eye"></i> Visual Profile & Overhead View
+                            </h4>
+                            <p id="bcs-profile-text" class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-1">Waist easily noted when viewed from above (hourglass shape). Abdominal tuck evident from side view.</p>
+                        </div>
+                        <div class="p-3 bg-brand-50 dark:bg-brand-950/60 rounded-xl border border-brand-200 dark:border-brand-800">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300">Veterinary Recommendation</h4>
+                            <p id="bcs-recommendation-text" class="text-xs font-semibold text-brand-800 dark:text-brand-200 mt-0.5">Maintain current caloric intake and routine physical exercise schedule.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 3. INTERACTIVE VITALS CHECKER ================= -->
+        <div id="tab-vitals" class="tab-content space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-heart-pulse text-brand-600"></i> Interactive Canine Vitals Checker
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Calculates physiological norms based on your dog's size class.</p>
+                    </div>
+
+                    <!-- Size Selector Buttons -->
+                    <div class="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-slate-700/60 p-1.5 rounded-xl">
+                        <span class="text-xs font-bold px-2 text-slate-500 dark:text-slate-400 uppercase">Size:</span>
+                        <button onclick="setDogSize('small')" id="btn-size-small" class="size-btn px-3 py-1 rounded-lg text-xs font-bold transition bg-white dark:bg-slate-800 text-brand-600 shadow-xs">Small (&lt;20 lbs)</button>
+                        <button onclick="setDogSize('medium')" id="btn-size-medium" class="size-btn px-3 py-1 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-300">Medium (20-50 lbs)</button>
+                        <button onclick="setDogSize('large')" id="btn-size-large" class="size-btn px-3 py-1 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-300">Large (50-90 lbs)</button>
+                        <button onclick="setDogSize('giant')" id="btn-size-giant" class="size-btn px-3 py-1 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-300">Giant (&gt;90 lbs)</button>
+                    </div>
+                </div>
+
+                <!-- Input Controls Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Heart Rate -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Heart Rate (BPM)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="vitals-hr-input" placeholder="e.g. 100" oninput="evaluateVitals()" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                            <i class="fa-solid fa-heart-pulse text-red-500 text-xl"></i>
+                        </div>
+                        <div class="mt-2 text-xs font-semibold text-slate-500" id="hr-range-label">Range: 90–140 BPM</div>
+                        <div id="hr-status-badge" class="mt-1 text-xs font-bold hidden"></div>
+                    </div>
+
+                    <!-- Respiration Rate -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Respiration (Breaths/min)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="vitals-rr-input" placeholder="e.g. 20" oninput="evaluateVitals()" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                            <i class="fa-solid fa-lungs text-blue-500 text-xl"></i>
+                        </div>
+                        <div class="mt-2 text-xs font-semibold text-slate-500">Normal at Rest: 10–30 BPM</div>
+                        <div id="rr-status-badge" class="mt-1 text-xs font-bold hidden"></div>
+                    </div>
+
+                    <!-- Temperature -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Temperature</label>
+                            <button onclick="toggleTempUnit()" id="temp-unit-toggle" class="text-xs font-bold text-brand-600 hover:underline">Unit: °F</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="number" step="0.1" id="vitals-temp-input" placeholder="101.5" oninput="evaluateVitals()" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                            <i class="fa-solid fa-thermometer text-amber-500 text-xl"></i>
+                        </div>
+                        <div class="mt-2 text-xs font-semibold text-slate-500" id="temp-range-label">Range: 100.0°F–102.5°F</div>
+                        <div id="temp-status-badge" class="mt-1 text-xs font-bold hidden"></div>
+                    </div>
+
+                    <!-- Gum Color / CRT -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Gum Color & CRT</label>
+                        <select id="vitals-gums-select" onchange="evaluateVitals()" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="pink">Pink / CRT &lt; 2s (Normal)</option>
+                            <option value="pale">Pale/White (Shock/Anemia)</option>
+                            <option value="blue">Blue/Cyanotic (Hypoxia/ER)</option>
+                            <option value="bright-red">Brick Red (Sepsis/Heatstroke)</option>
+                            <option value="yellow">Yellow/Jaundiced (Liver/Hemolysis)</option>
+                        </select>
+                        <div class="mt-2 text-xs font-semibold text-slate-500">Target CRT: &lt; 2 seconds</div>
+                        <div id="gums-status-badge" class="mt-1 text-xs font-bold hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Vitals Status Output -->
+                <div id="vitals-summary-banner" class="mt-6 p-4 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-start gap-3 border border-slate-200 dark:border-slate-600">
+                    <i class="fa-solid fa-circle-info text-brand-600 text-lg mt-0.5" id="vitals-status-icon"></i>
+                    <div>
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400" id="vitals-status-title">Vital Signs Status</h4>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-200 mt-0.5" id="vitals-status-desc">
+                            Enter heart rate, respiration, and body temperature above to evaluate canine physiological stability.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 4. HHHHHMM QUALITY OF LIFE CALCULATOR ================= -->
+        <div id="tab-qol" class="tab-content space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-2">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-notes-medical text-purple-600"></i> HHHHHMM Quality of Life Scale
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Assesses geriatric or chronically ill dogs across 7 key parameters (Score 0–10 each).</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-2xl font-black text-purple-600 dark:text-purple-400" id="qol-total-score">49</span>
+                        <span class="text-xs text-slate-400 font-bold block">/ 70 Total Points</span>
+                    </div>
+                </div>
+
+                <!-- Sliders Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Hurt -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">1. HURT (Pain Control & Breathing)</span>
+                            <span id="qol-val-hurt" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Is pain controlled? Breathing adequate and painless?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-hurt">
+                    </div>
+
+                    <!-- Hunger -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">2. HUNGER (Eating Willingness)</span>
+                            <span id="qol-val-hunger" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Is the dog eating willingly? Hand feeding required?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-hunger">
+                    </div>
+
+                    <!-- Hydration -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">3. HYDRATION (Fluid Balance)</span>
+                            <span id="qol-val-hydration" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Is skin turgor normal? Are fluids required?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-hydration">
+                    </div>
+
+                    <!-- Hygiene -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">4. HYGIENE (Cleanliness & Sores)</span>
+                            <span id="qol-val-hygiene" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Can dog be kept clean/dry? Pressure sores present?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-hygiene">
+                    </div>
+
+                    <!-- Happiness -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">5. HAPPINESS (Joy & Engagement)</span>
+                            <span id="qol-val-happiness" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Shows joy, greets family, wags tail, plays with toys?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-happiness">
+                    </div>
+
+                    <!-- Mobility -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">6. MOBILITY (Standing & Walking)</span>
+                            <span id="qol-val-mobility" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Can dog rise without assistance? Walk comfortably?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-mobility">
+                    </div>
+
+                    <!-- More Good Days -->
+                    <div class="bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 md:col-span-2">
+                        <div class="flex justify-between items-center text-xs font-bold mb-1">
+                            <span class="text-slate-800 dark:text-slate-200">7. MORE GOOD DAYS THAN BAD</span>
+                            <span id="qol-val-gooddays" class="text-purple-600 font-extrabold">7 / 10</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-2">Do good days outnumber bad days? Is human-animal bond intact?</p>
+                        <input type="range" min="0" max="10" value="7" class="w-full accent-purple-600" oninput="calcQoL()" id="qol-gooddays">
+                    </div>
+                </div>
+
+                <!-- Interpretation Banner -->
+                <div id="qol-interpretation-box" class="mt-6 p-5 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 flex items-start gap-3">
+                    <i class="fa-solid fa-heart-pulse text-purple-600 text-xl mt-0.5"></i>
+                    <div>
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-purple-900 dark:text-purple-200" id="qol-status-title">Acceptable Quality of Life (&gt; 35 Points)</h4>
+                        <p class="text-xs font-medium text-purple-800 dark:text-purple-300 mt-1" id="qol-status-desc">
+                            A total score above 35 indicates that the dog's quality of life remains acceptable under current management. Continue monitoring weekly.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 5. SEARCHABLE FOOD SAFETY DATABASE ================= -->
+        <div id="tab-food" class="tab-content space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 mb-6 border-b border-slate-200 dark:border-slate-700 gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-shield-cat text-amber-500"></i> Food Safety & Dietary Database
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Search ingredients for toxicity, health cautions, or safe alternatives.</p>
+                    </div>
+
+                    <!-- Search & Filter Controls -->
+                    <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                        <div class="relative flex-grow">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                            <input type="text" id="food-search-input" oninput="filterFoodDB()" placeholder="Search food (e.g. Grape, Xylitol)..." class="w-full sm:w-64 pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-brand-500 outline-none">
+                        </div>
+                        <div class="flex gap-1 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-bold">
+                            <button onclick="setFoodFilter('all')" id="food-filter-all" class="food-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs">All</button>
+                            <button onclick="setFoodFilter('toxic')" id="food-filter-toxic" class="food-filter-btn px-2.5 py-1 rounded-lg text-red-600">Toxic</button>
+                            <button onclick="setFoodFilter('caution')" id="food-filter-caution" class="food-filter-btn px-2.5 py-1 rounded-lg text-amber-600">Caution</button>
+                            <button onclick="setFoodFilter('safe')" id="food-filter-safe" class="food-filter-btn px-2.5 py-1 rounded-lg text-emerald-600">Safe</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Food Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="food-grid">
+                    <!-- Dynamic Javascript Rendering -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 6. EMERGENCY TRIAGE DECISION TOOL ================= -->
+        <div id="tab-triage" class="tab-content space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="pb-4 mb-6 border-b border-slate-200 dark:border-slate-700">
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-truck-medical text-red-600"></i> Emergency Triage Decision Tool
+                    </h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Select any symptoms your dog is currently exhibiting to get immediate triage instructions.</p>
+                </div>
+
+                <!-- Symptom Checklist Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6" id="triage-checkbox-grid">
+                    <!-- JS generated red flag checkboxes -->
+                </div>
+
+                <!-- Live Triage Output Box -->
+                <div id="triage-result-box" class="p-6 rounded-2xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-2xl" id="triage-icon"></i>
+                        <div>
+                            <h3 class="text-base font-extrabold text-slate-900 dark:text-white" id="triage-headline">No Emergency Red Flags Selected</h3>
+                            <p class="text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5" id="triage-detail">
+                                Select symptoms above if your dog is unwell. If no symptoms are selected, continue routine home monitoring.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 7. PRINTABLE FORMS & LOGS (WITH LOCALSTORAGE) ================= -->
+        <div id="tab-forms" class="tab-content space-y-6">
+            <!-- Form Sub-Tabs -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-xs border border-slate-200 dark:border-slate-700 no-print">
+                <div class="flex flex-wrap gap-2" id="formSubTabs">
+                    <button onclick="switchFormSubTab('form-monthly')" class="form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-600 text-white">Monthly Health Log</button>
+                    <button onclick="switchFormSubTab('form-patient')" class="form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">New Vet Summary</button>
+                    <button onclick="switchFormSubTab('form-sitter')" class="form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">Pet Sitter Sheet</button>
+                    <button onclick="switchFormSubTab('form-symptom')" class="form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">Symptom Tracker</button>
+                    <button onclick="switchFormSubTab('form-senior')" class="form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200">Senior Checklist</button>
+                </div>
+            </div>
+
+            <!-- SUB-FORM 1: MONTHLY HEALTH LOG -->
+            <div id="form-monthly" class="form-sub-content space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card">
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white"><i class="fa-solid fa-calendar-check text-brand-600"></i> Monthly Health & Vital Signs Entry</h3>
+                        <button onclick="saveMonthlyLog()" class="no-print px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition shadow-xs">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Log Entry
+                        </button>
+                    </div>
+
+                    <form id="monthlyLogForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Dog Name</label>
+                            <input type="text" id="m-dog-name" placeholder="Buddy" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Date</label>
+                            <input type="date" id="m-date" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Weight (lbs)</label>
+                            <input type="number" step="0.1" id="m-weight" placeholder="45.5" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Body Score (1-9)</label>
+                            <input type="number" id="m-bcs" min="1" max="9" placeholder="5" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Preventatives Given</label>
+                            <input type="text" id="m-preventatives" placeholder="Heartgard + NexGard" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Notes & Lump Check Findings</label>
+                            <input type="text" id="m-notes" placeholder="No new lumps, ears clean, bright eyes." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-xs font-bold">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Log Entries Table -->
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card">
+                    <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3">Saved Monthly Logs</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 dark:bg-slate-700/60 uppercase font-extrabold text-slate-500">
+                                <tr>
+                                    <th class="p-2.5">Date</th>
+                                    <th class="p-2.5">Dog</th>
+                                    <th class="p-2.5">Weight</th>
+                                    <th class="p-2.5">BCS</th>
+                                    <th class="p-2.5">Preventatives</th>
+                                    <th class="p-2.5">Notes</th>
+                                    <th class="p-2.5 no-print text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthly-log-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 font-medium">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-FORM 2: NEW VET SUMMARY SHEET -->
+            <div id="form-patient" class="form-sub-content hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white"><i class="fa-solid fa-file-waveform text-brand-600"></i> New Patient Veterinary Summary Sheet</h3>
+                        <button onclick="window.print()" class="no-print px-3 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-xs font-bold rounded-lg">Print Form</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Dog Name</label>
+                            <input type="text" id="vp-dog" placeholder="Max" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Breed / Mix</label>
+                            <input type="text" id="vp-breed" placeholder="Golden Retriever" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Age / DOB</label>
+                            <input type="text" id="vp-age" placeholder="4 years" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Microchip ID #</label>
+                            <input type="text" id="vp-chip" placeholder="985141002341234" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Primary Food Brand</label>
+                            <input type="text" id="vp-food" placeholder="Purina Pro Plan Salmon" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Known Allergies</label>
+                            <input type="text" id="vp-allergies" placeholder="Chicken protein, Penicillin" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 block">Top 3 Concerns for Today's Exam</label>
+                        <textarea id="vp-concerns" rows="2" placeholder="1. Mild itching on paws&#10;2. Lipoma check on left ribcage&#10;3. Annual bloodwork screen" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-FORM 3: PET SITTER INSTRUCTIONS SHEET -->
+            <div id="form-sitter" class="form-sub-content hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white"><i class="fa-solid fa-clipboard-user text-brand-600"></i> Pet Sitter Expert Instruction Sheet</h3>
+                        <button onclick="window.print()" class="no-print px-3 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 text-xs font-bold rounded-lg">Print Sheet</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Feeding Schedule & Portion</label>
+                            <input type="text" id="sit-feed" placeholder="1.5 cups AM and PM (Add splash of warm water)" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Emergency Recall Word</label>
+                            <input type="text" id="sit-recall" placeholder="'TOUCH' or 'HERE' with high-value treat" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">Primary Vet Clinic & Phone</label>
+                            <input type="text" id="sit-vet" placeholder="VCA Animal Hospital - (555) 019-2831" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block">24/7 ER Clinic Address</label>
+                            <input type="text" id="sit-er" placeholder="123 Emergency Ave - (555) 999-0000" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-semibold">
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-red-50 dark:bg-red-950/60 rounded-xl border border-red-200 dark:border-red-900">
+                        <span class="text-xs font-extrabold uppercase text-red-700 dark:text-red-300">Strict Dietary Warning for Sitter</span>
+                        <p class="text-xs font-medium text-red-800 dark:text-red-200 mt-1">
+                            DO NOT feed Grapes, Raisins, Onions, Garlic, Chocolate, Macadamia Nuts, or anything with Xylitol (check peanut butter labels).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-FORM 4: SYMPTOM TRACKER LOG -->
+            <div id="form-symptom" class="form-sub-content hidden space-y-6">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card">
+                    <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-200 dark:border-slate-700">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white"><i class="fa-solid fa-notes-medical text-brand-600"></i> Canine Symptom Tracker Log</h3>
+                        <button onclick="saveSymptomLog()" class="no-print px-4 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition">Save Symptom Event</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Primary Symptom</label>
+                            <input type="text" id="sym-name" placeholder="Dry hacking cough / Reverse sneeze" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Onset Date & Time</label>
+                            <input type="datetime-local" id="sym-time" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-bold">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Severity Grade</label>
+                            <select id="sym-severity" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 text-xs font-bold">
+                                <option value="Mild">Mild (Normal energy)</option>
+                                <option value="Moderate">Moderate (Reduced appetite)</option>
+                                <option value="Severe">Severe (Lethargic/Urgent)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card">
+                    <h4 class="font-bold text-sm text-slate-900 dark:text-white mb-3">Logged Symptoms History</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 dark:bg-slate-700/60 uppercase font-extrabold text-slate-500">
+                                <tr>
+                                    <th class="p-2.5">Date & Time</th>
+                                    <th class="p-2.5">Symptom</th>
+                                    <th class="p-2.5">Severity</th>
+                                    <th class="p-2.5 no-print text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="symptom-log-table-body" class="divide-y divide-slate-200 dark:divide-slate-700 font-medium">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-FORM 5: SENIOR CARE CHECKLIST -->
+            <div id="form-senior" class="form-sub-content hidden">
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700 print-card space-y-4">
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white pb-3 border-b border-slate-200 dark:border-slate-700">
+                        <i class="fa-solid fa-bone text-brand-600"></i> Senior Care Screening Checklist (Ages 7+)
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-slate-700 dark:text-slate-300">
+                        <label class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <input type="checkbox" class="accent-brand-600 w-4 h-4">
+                            <span>Hesitation or rear-leg struggle when rising from bed</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <input type="checkbox" class="accent-brand-600 w-4 h-4">
+                            <span>Bunny-hopping gait or slipping on hardwood floors</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <input type="checkbox" class="accent-brand-600 w-4 h-4">
+                            <span>Nighttime pacing, panting, or staring at walls</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <input type="checkbox" class="accent-brand-600 w-4 h-4">
+                            <span>Noticeable increase in daily water bowl refills</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 8. FIRST AID CHECKLIST ================= -->
+        <div id="tab-firstaid" class="tab-content space-y-6">
+            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xs border border-slate-200 dark:border-slate-700">
+                <div class="flex justify-between items-center pb-4 mb-6 border-b border-slate-200 dark:border-slate-700">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-kit-medical text-emerald-500"></i> First Aid Kit Inventory Checklist
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Track home emergency supplies. Saved locally.</p>
+                    </div>
+                    <button onclick="resetFirstAidChecklist()" class="text-xs text-slate-400 hover:text-red-500 font-bold">Reset Inventory</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="first-aid-items-grid">
+                    <!-- Javascript generated interactive checklist -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 py-6 mt-12 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
+            <p class="font-bold text-slate-700 dark:text-slate-300">Canine Health Pro &copy; Veterinary Gold-Standard Reference & Care Toolkit</p>
+            <p class="max-w-3xl mx-auto leading-relaxed">
+                Disclaimer: This application provides educational reference material based on AAHA and AVMA clinical standards. It is not a substitute for professional veterinary diagnosis, treatment, or emergency care.
+            </p>
+        </div>
+    </footer>
+
+    <!-- LOGIC JAVASCRIPT CODE -->
+    <script>
+        /* ================= STATE & DATA ================= */
+        let state = {
+            currentTab: 'tab-dashboard',
+            currentFormSubTab: 'form-monthly',
+            dogSize: 'small',
+            bcs: 5,
+            tempUnit: 'F',
+            foodFilter: 'all',
+            monthlyLogs: JSON.parse(localStorage.getItem('chp_monthly_logs')) || [],
+            symptomLogs: JSON.parse(localStorage.getItem('chp_symptom_logs')) || [],
+            firstAidState: JSON.parse(localStorage.getItem('chp_firstaid')) || {}
+        };
+
+        /* BCS Database */
+        const bcsData = {
+            1: { title: "Emaciated", badge: "Underweight (1-3)", color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300", ribs: "Ribs, spine, and hip bones visible from a distance. No feelable fat reserves.", tuck: "Extreme abdominal tuck and severe waist indentation.", rec: "Urgent veterinary nutritional evaluation required." },
+            2: { title: "Very Thin", badge: "Underweight (1-3)", color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300", ribs: "Ribs easily visible and felt with no fat cover.", tuck: "Prominent waist and severe abdominal tuck.", rec: "Increase caloric intake under veterinary guidance." },
+            3: { title: "Thin", badge: "Underweight (1-3)", color: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300", ribs: "Ribs easily felt with minimal fat cover. Tops of lumbar vertebrae visible.", tuck: "Clear waist and obvious abdominal tuck.", rec: "Slightly increase daily feeding portions." },
+            4: { title: "Lean", badge: "Ideal (4-5)", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300", ribs: "Ribs easily felt with thin fat cover. Waist visible from above.", tuck: "Abdominal tuck visible from side profile.", rec: "Excellent conditioning. Maintain current routine." },
+            5: { title: "Ideal", badge: "Optimal (4-5)", color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300", ribs: "Ribs felt easily without excess fat padding.", tuck: "Hourglass waist from above, clear abdominal tuck.", rec: "Maintain current feeding and exercise plan." },
+            6: { title: "Overweight", badge: "Overweight (6-7)", color: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300", ribs: "Ribs felt with slight excess fat layer.", tuck: "Waist visible from above but not prominent.", rec: "Reduce treats by 10% and increase activity." },
+            7: { title: "Heavy", badge: "Overweight (6-7)", color: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300", ribs: "Ribs difficult to feel under thick fat padding.", tuck: "Waist barely visible, slight abdominal tuck.", rec: "Implement structured caloric deficit diet." },
+            8: { title: "Obese", badge: "Obese (8-9)", color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300", ribs: "Ribs impossible to feel under heavy fat deposits.", tuck: "No waist, abdominal distension present.", rec: "Veterinary weight-loss program recommended." },
+            9: { title: "Severely Obese", badge: "Obese (8-9)", color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300", ribs: "Massive fat deposits over neck, spine, and tail base.", tuck: "Distended abdomen with no tuck or waist.", rec: "High risk for diabetes and joint degeneration. Consult vet immediately." }
+        };
+
+        /* Vitals Ranges by Size Class */
+        const vitalsRanges = {
+            small:  { hrMin: 90, hrMax: 140, label: "90–140 BPM (Small Breed)" },
+            medium: { hrMin: 70, hrMax: 120, label: "70–120 BPM (Medium Breed)" },
+            large:  { hrMin: 60, hrMax: 100, label: "60–100 BPM (Large Breed)" },
+            giant:  { hrMin: 50, hrMax: 90,  label: "50–90 BPM (Giant Breed)" }
+        };
+
+        /* Food Safety Database */
+        const foodDatabase = [
+            { name: "Xylitol / Birch Sugar", cat: "toxic", icon: "fa-ban text-red-600", desc: "Found in sugar-free gum & peanut butter. Triggers rapid hypoglycemia and liver failure." },
+            { name: "Grapes & Raisins", cat: "toxic", icon: "fa-ban text-red-600", desc: "Causes acute kidney failure. Even small amounts can be fatal to susceptible dogs." },
+            { name: "Onions & Garlic", cat: "toxic", icon: "fa-ban text-red-600", desc: "Damages red blood cells causing hemolytic anemia (raw, cooked, or powdered)." },
+            { name: "Chocolate & Caffeine", cat: "toxic", icon: "fa-ban text-red-600", desc: "Contains theobromine. Causes cardiac arrhythmias, muscle tremors, and seizures." },
+            { name: "Macadamia Nuts", cat: "toxic", icon: "fa-ban text-red-600", desc: "Causes weakness, hyperthermia, vomiting, and neurological tremors." },
+            { name: "Bacon / High-Fat Scraps", cat: "caution", icon: "fa-triangle-exclamation text-amber-500", desc: "High fat content triggers painful pancreatitis. Limit strictly." },
+            { name: "Dairy / Cheese", cat: "caution", icon: "fa-triangle-exclamation text-amber-500", desc: "Adult dogs lack lactase enzyme. May cause gas, bloating, and diarrhea." },
+            { name: "Cooked Bones", cat: "caution", icon: "fa-triangle-exclamation text-amber-500", desc: "Brittle bones splinter during chewing, risking GI perforation." },
+            { name: "Plain Cooked Chicken", cat: "safe", icon: "fa-circle-check text-emerald-500", desc: "Lean protein source. Excellent for bland diets during stomach upset." },
+            { name: "Carrots & Green Beans", cat: "safe", icon: "fa-circle-check text-emerald-500", desc: "Low calorie, crunchy snacks rich in fiber and vitamins." },
+            { name: "Blueberries & Apples", cat: "safe", icon: "fa-circle-check text-emerald-500", desc: "Antioxidant rich (remove apple seeds & core)." }
+        ];
+
+        /* Emergency Triage Symptoms */
+        const triageSymptoms = [
+            { id: "sym-gdv", text: "Unproductive retching / Bloated abdomen (GDV)", level: "emergency" },
+            { id: "sym-pale", text: "White or pale gums / Cold extremities", level: "emergency" },
+            { id: "sym-breath", text: "Open-mouth breathing / Blue/cyanotic tongue", level: "emergency" },
+            { id: "sym-seizure", text: "Active seizure lasting > 3 mins or repeated", level: "emergency" },
+            { id: "sym-urine", text: "Straining to urinate with no urine produced", level: "urgent" },
+            { id: "sym-limp", text: "Sudden inability to walk or rear-leg collapse", level: "urgent" },
+            { id: "sym-vomit", text: "Repeated vomiting (> 3 times in 4 hours)", level: "urgent" },
+            { id: "sym-scratch", text: "Mild scratching or single missed meal", level: "home" }
+        ];
+
+        /* First Aid Checklist Items */
+        const firstAidMaster = [
+            "Self-Adherent Vet Wrap (2\" & 4\")",
+            "Sterile Gauze Pads (4x4)",
+            "Chlorhexidine 2% Antiseptic Wash",
+            "Digital Rectal Thermometer + Lube",
+            "Blunt-Tip Bandage Scissors",
+            "Fine-Point Tweezers / Tick Tool",
+            "Plain Benadryl (Diphenhydramine)",
+            "Styptic Powder (Kwik Stop)",
+            "Sterile Eye Flush Saline",
+            "Emergency Foil Space Blanket"
+        ];
+
+        /* ================= INIT & EVENT LISTENERS ================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            renderBCSGrid();
+            selectBCS(5);
+            renderFoodGrid();
+            renderTriageGrid();
+            renderFirstAidGrid();
+            renderMonthlyLogs();
+            renderSymptomLogs();
+            updateDashCount();
+
+            // Navigation Tabs
+            document.querySelectorAll('#navTabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+            });
+        });
+
+        /* ================= THEME TOGGLE ================= */
+        function initTheme() {
+            const savedTheme = localStorage.getItem('chp_theme') || 'light';
+            if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+            document.getElementById('themeToggle').addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                localStorage.setItem('chp_theme', isDark ? 'dark' : 'light');
+            });
+        }
+
+        /* ================= TAB SWITCHING ================= */
+        function switchTab(tabId) {
+            state.currentTab = tabId;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId)?.classList.add('active');
+
+            document.querySelectorAll('#navTabs .tab-btn').forEach(btn => {
+                if (btn.dataset.tab === tabId) {
+                    btn.className = "tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 bg-brand-600 text-white shadow-xs";
+                } else {
+                    btn.className = "tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700";
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchFormSubTab(subId) {
+            state.currentFormSubTab = subId;
+            document.querySelectorAll('.form-sub-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(subId)?.classList.remove('hidden');
+
+            document.querySelectorAll('#formSubTabs .form-sub-btn').forEach(btn => {
+                btn.className = "form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200";
+            });
+            event.target.className = "form-sub-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-600 text-white";
+        }
+
+        /* ================= BCS VISUAL TOOL ================= */
+        function renderBCSGrid() {
+            const grid = document.getElementById('bcs-selector-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.createElement('button');
+                btn.id = `bcs-btn-${i}`;
+                btn.onclick = () => selectBCS(i);
+                btn.className = `py-2 rounded-xl text-xs font-extrabold border transition shadow-xs ${i === 5 ? 'bg-brand-600 text-white border-brand-600' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700'}`;
+                btn.innerText = i;
+                grid.appendChild(btn);
+            }
+        }
+
+        function selectBCS(num) {
+            state.bcs = num;
+            document.getElementById('bcs-slider').value = num;
+            const data = bcsData[num];
+
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.getElementById(`bcs-btn-${i}`);
+                if (i === num) {
+                    btn.className = "py-2 rounded-xl text-xs font-extrabold border transition bg-brand-600 text-white border-brand-600 shadow-xs";
+                } else {
+                    btn.className = "py-2 rounded-xl text-xs font-extrabold border transition bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700";
+                }
+            }
+
+            document.getElementById('bcs-num-large').innerText = num;
+            document.getElementById('bcs-category-title').innerText = data.title;
+            const badge = document.getElementById('bcs-category-badge');
+            badge.innerText = data.badge;
+            badge.className = `inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold ${data.color}`;
+
+            document.getElementById('bcs-rib-text').innerText = data.ribs;
+            document.getElementById('bcs-profile-text').innerText = data.tuck;
+            document.getElementById('bcs-recommendation-text').innerText = data.rec;
+        }
+
+        /* ================= VITALS EVALUATOR ================= */
+        function setDogSize(size) {
+            state.dogSize = size;
+            ['small', 'medium', 'large', 'giant'].forEach(s => {
+                const btn = document.getElementById(`btn-size-${s}`);
+                if (s === size) {
+                    btn.className = "size-btn px-3 py-1 rounded-lg text-xs font-bold transition bg-white dark:bg-slate-800 text-brand-600 shadow-xs";
+                } else {
+                    btn.className = "size-btn px-3 py-1 rounded-lg text-xs font-bold transition text-slate-600 dark:text-slate-300";
+                }
+            });
+            document.getElementById('hr-range-label').innerText = `Target Range: ${vitalsRanges[size].label}`;
+            evaluateVitals();
+        }
+
+        function toggleTempUnit() {
+            state.tempUnit = state.tempUnit === 'F' ? 'C' : 'F';
+            document.getElementById('temp-unit-toggle').innerText = `Unit: °${state.tempUnit}`;
+            document.getElementById('temp-range-label').innerText = state.tempUnit === 'F' ? "Range: 100.0°F–102.5°F" : "Range: 37.8°C–39.2°C";
+            evaluateVitals();
+        }
+
+        function evaluateVitals() {
+            const hr = parseFloat(document.getElementById('vitals-hr-input').value);
+            const rr = parseFloat(document.getElementById('vitals-rr-input').value);
+            const temp = parseFloat(document.getElementById('vitals-temp-input').value);
+            const gums = document.getElementById('vitals-gums-select').value;
+
+            let alerts = [];
+            const range = vitalsRanges[state.dogSize];
+
+            if (hr) {
+                if (hr < range.hrMin) alerts.push("Bradycardia (Low Heart Rate)");
+                else if (hr > range.hrMax) alerts.push("Tachycardia (High Heart Rate)");
+            }
+
+            if (rr) {
+                if (rr > 30) alerts.push("Tachypnea / Heavy Panting");
+            }
+
+            if (temp) {
+                const tMin = state.tempUnit === 'F' ? 100.0 : 37.8;
+                const tMax = state.tempUnit === 'F' ? 102.5 : 39.2;
+                if (temp < tMin) alerts.push("Hypothermia (< 100°F)");
+                else if (temp > tMax) alerts.push("Fever / Hyperthermia (> 102.5°F)");
+            }
+
+            if (gums !== 'pink') alerts.push(`Abnormal Gum Color (${gums.toUpperCase()})`);
+
+            const banner = document.getElementById('vitals-summary-banner');
+            const title = document.getElementById('vitals-status-title');
+            const desc = document.getElementById('vitals-status-desc');
+
+            if (alerts.length > 0) {
+                banner.className = "mt-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/60 flex items-start gap-3 border border-red-200 dark:border-red-900";
+                title.innerText = "Abnormal Vital Signs Detected";
+                title.className = "text-xs font-extrabold uppercase tracking-wider text-red-700 dark:text-red-300";
+                desc.innerText = alerts.join(" • ") + ". Consult your veterinarian.";
+            } else {
+                banner.className = "mt-6 p-4 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-start gap-3 border border-slate-200 dark:border-slate-600";
+                title.innerText = "Vital Signs Normal";
+                title.className = "text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400";
+                desc.innerText = "Physiological parameters are within normal clinical thresholds.";
+            }
+        }
+
+        /* ================= QUALITY OF LIFE (HHHHHMM) ================= */
+        function calcQoL() {
+            const keys = ['hurt', 'hunger', 'hydration', 'hygiene', 'happiness', 'mobility', 'gooddays'];
+            let total = 0;
+            keys.forEach(k => {
+                const val = parseInt(document.getElementById(`qol-${k}`).value);
+                document.getElementById(`qol-val-${k}`).innerText = `${val} / 10`;
+                total += val;
+            });
+
+            document.getElementById('qol-total-score').innerText = total;
+            const box = document.getElementById('qol-interpretation-box');
+            const title = document.getElementById('qol-status-title');
+            const desc = document.getElementById('qol-status-desc');
+
+            if (total > 35) {
+                box.className = "mt-6 p-5 rounded-xl bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 flex items-start gap-3";
+                title.innerText = "Acceptable Quality of Life (> 35 Points)";
+                desc.innerText = "The score suggests an acceptable quality of life under current medical and supportive care.";
+            } else {
+                box.className = "mt-6 p-5 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 flex items-start gap-3";
+                title.innerText = "Quality of Life Compromised (≤ 35 Points)";
+                desc.innerText = "Score indicates significant suffering or decline. Immediate veterinary consultation advised.";
+            }
+        }
+
+        /* ================= FOOD SAFETY DATABASE ================= */
+        function renderFoodGrid() {
+            const grid = document.getElementById('food-grid');
+            grid.innerHTML = '';
+            const search = document.getElementById('food-search-input').value.toLowerCase();
+
+            foodDatabase.filter(f => {
+                const matchSearch = f.name.toLowerCase().includes(search) || f.desc.toLowerCase().includes(search);
+                const matchFilter = state.foodFilter === 'all' || f.cat === state.foodFilter;
+                return matchSearch && matchFilter;
+            }).forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-sm text-slate-900 dark:text-white">${item.name}</span>
+                            <i class="fa-solid ${item.icon} text-lg"></i>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">${item.desc}</p>
+                    </div>
+                    <span class="mt-3 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full inline-block self-start ${
+                        item.cat === 'toxic' ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300' :
+                        item.cat === 'caution' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                        'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                    }">${item.cat}</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterFoodDB() { renderFoodGrid(); }
+        function setFoodFilter(cat) {
+            state.foodFilter = cat;
+            ['all', 'toxic', 'caution', 'safe'].forEach(c => {
+                const btn = document.getElementById(`food-filter-${c}`);
+                if (c === cat) {
+                    btn.className = "food-filter-btn px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs";
+                } else {
+                    btn.className = "food-filter-btn px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white";
+                }
+            });
+            renderFoodGrid();
+        }
+
+        /* ================= EMERGENCY TRIAGE ================= */
+        function renderTriageGrid() {
+            const grid = document.getElementById('triage-checkbox-grid');
+            grid.innerHTML = '';
+            triageSymptoms.forEach(s => {
+                const label = document.createElement('label');
+                label.className = "flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition text-xs font-semibold text-slate-800 dark:text-slate-200";
+                label.innerHTML = `
+                    <input type="checkbox" value="${s.level}" onchange="evaluateTriage()" class="triage-check accent-red-600 w-4 h-4">
+                    <span>${s.text}</span>
+                `;
+                grid.appendChild(label);
+            });
+        }
+
+        function evaluateTriage() {
+            const checked = Array.from(document.querySelectorAll('.triage-check:checked')).map(c => c.value);
+            const box = document.getElementById('triage-result-box');
+            const headline = document.getElementById('triage-headline');
+            const detail = document.getElementById('triage-detail');
+            const icon = document.getElementById('triage-icon');
+
+            if (checked.includes('emergency')) {
+                box.className = "p-6 rounded-2xl bg-red-600 text-white shadow-md border border-red-700";
+                icon.className = "fa-solid fa-triangle-exclamation text-3xl text-white";
+                headline.innerText = "CRITICAL EMERGENCY - GO TO ER VET IMMEDIATELY";
+                detail.innerText = "Life-threatening symptoms selected. Do not wait for an appointment. Proceed to the nearest 24/7 emergency veterinary hospital.";
+            } else if (checked.includes('urgent')) {
+                box.className = "p-6 rounded-2xl bg-amber-500 text-slate-900 shadow-md border border-amber-600";
+                icon.className = "fa-solid fa-clock text-3xl text-slate-900";
+                headline.innerText = "URGENT - CONTACT VET TODAY";
+                detail.innerText = "Symptoms require medical evaluation within 12–24 hours. Call your primary veterinarian for an urgent same-day fit-in.";
+            } else if (checked.includes('home')) {
+                box.className = "p-6 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 text-blue-900 dark:text-blue-200";
+                icon.className = "fa-solid fa-house-medical text-3xl text-blue-600";
+                headline.innerText = "Routine Home Monitoring";
+                detail.innerText = "Symptom appears non-urgent. Monitor vitals and rest. Contact vet if condition worsens.";
+            } else {
+                box.className = "p-6 rounded-2xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700";
+                icon.className = "fa-solid fa-circle-check text-emerald-600 text-2xl";
+                headline.innerText = "No Emergency Red Flags Selected";
+                detail.innerText = "Select symptoms above if your dog is unwell. If no symptoms are selected, continue routine home monitoring.";
+            }
+        }
+
+        /* ================= FIRST AID CHECKLIST ================= */
+        function renderFirstAidGrid() {
+            const grid = document.getElementById('first-aid-items-grid');
+            grid.innerHTML = '';
+            firstAidMaster.forEach((item, idx) => {
+                const isChecked = state.firstAidState[idx] || false;
+                const div = document.createElement('div');
+                div.className = `p-3.5 rounded-xl border flex items-center justify-between text-xs font-bold transition cursor-pointer ${
+                    isChecked ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200' : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                }`;
+                div.onclick = () => toggleFirstAidItem(idx);
+                div.innerHTML = `
+                    <span>${item}</span>
+                    <i class="fa-solid ${isChecked ? 'fa-square-check text-emerald-600 text-base' : 'fa-square text-slate-300 text-base'}"></i>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function toggleFirstAidItem(idx) {
+            state.firstAidState[idx] = !state.firstAidState[idx];
+            localStorage.setItem('chp_firstaid', JSON.stringify(state.firstAidState));
+            renderFirstAidGrid();
+        }
+
+        function resetFirstAidChecklist() {
+            state.firstAidState = {};
+            localStorage.removeItem('chp_firstaid');
+            renderFirstAidGrid();
+        }
+
+        /* ================= LOCALSTORAGE LOGS MANAGEMENT ================= */
+        function saveMonthlyLog() {
+            const entry = {
+                id: Date.now(),
+                dog: document.getElementById('m-dog-name').value || "Buddy",
+                date: document.getElementById('m-date').value || new Date().toISOString().split('T')[0],
+                weight: document.getElementById('m-weight').value || "N/A",
+                bcs: document.getElementById('m-bcs').value || "5",
+                preventatives: document.getElementById('m-preventatives').value || "None",
+                notes: document.getElementById('m-notes').value || "Routine check"
+            };
+
+            state.monthlyLogs.unshift(entry);
+            localStorage.setItem('chp_monthly_logs', JSON.stringify(state.monthlyLogs));
+            renderMonthlyLogs();
+            updateDashCount();
+            document.getElementById('monthlyLogForm').reset();
+        }
+
+        function renderMonthlyLogs() {
+            const body = document.getElementById('monthly-log-table-body');
+            body.innerHTML = '';
+            if (state.monthlyLogs.length === 0) {
+                body.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400 italic">No monthly logs saved yet.</td></tr>`;
+                return;
+            }
+            state.monthlyLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2.5 font-bold">${log.date}</td>
+                    <td class="p-2.5">${log.dog}</td>
+                    <td class="p-2.5">${log.weight} lbs</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full bg-brand-100 dark:bg-brand-900 text-brand-800 dark:text-brand-200 font-extrabold">${log.bcs}/9</span></td>
+                    <td class="p-2.5">${log.preventatives}</td>
+                    <td class="p-2.5">${log.notes}</td>
+                    <td class="p-2.5 no-print text-right"><button onclick="deleteMonthlyLog(${log.id})" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i></button></td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function deleteMonthlyLog(id) {
+            state.monthlyLogs = state.monthlyLogs.filter(l => l.id !== id);
+            localStorage.setItem('chp_monthly_logs', JSON.stringify(state.monthlyLogs));
+            renderMonthlyLogs();
+            updateDashCount();
+        }
+
+        function saveSymptomLog() {
+            const entry = {
+                id: Date.now(),
+                name: document.getElementById('sym-name').value || "Coughing",
+                time: document.getElementById('sym-time').value || new Date().toLocaleString(),
+                severity: document.getElementById('sym-severity').value
+            };
+            state.symptomLogs.unshift(entry);
+            localStorage.setItem('chp_symptom_logs', JSON.stringify(state.symptomLogs));
+            renderSymptomLogs();
+            updateDashCount();
+        }
+
+        function renderSymptomLogs() {
+            const body = document.getElementById('symptom-log-table-body');
+            body.innerHTML = '';
+            if (state.symptomLogs.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No symptom events recorded.</td></tr>`;
+                return;
+            }
+            state.symptomLogs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2.5 font-bold">${log.time}</td>
+                    <td class="p-2.5">${log.name}</td>
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded-full font-bold text-[10px] uppercase ${log.severity === 'Severe' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}">${log.severity}</span></td>
+                    <td class="p-2.5 no-print text-right"><button onclick="deleteSymptomLog(${log.id})" class="text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-trash"></i></button></td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function deleteSymptomLog(id) {
+            state.symptomLogs = state.symptomLogs.filter(l => l.id !== id);
+            localStorage.setItem('chp_symptom_logs', JSON.stringify(state.symptomLogs));
+            renderSymptomLogs();
+            updateDashCount();
+        }
+
+        function updateDashCount() {
+            document.getElementById('dash-log-count').innerText = `${state.monthlyLogs.length + state.symptomLogs.length}`;
+        }
+
+        /* ================= JSON BACKUP EXPORT & IMPORT ================= */
+        function exportAllData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const anchor = document.createElement('a');
+            anchor.setAttribute("href", dataStr);
+            anchor.setAttribute("download", `CanineHealthPro_Backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+        }
+
+        function importAllData(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.monthlyLogs) state.monthlyLogs = imported.monthlyLogs;
+                    if (imported.symptomLogs) state.symptomLogs = imported.symptomLogs;
+                    if (imported.firstAidState) state.firstAidState = imported.firstAidState;
+
+                    localStorage.setItem('chp_monthly_logs', JSON.stringify(state.monthlyLogs));
+                    localStorage.setItem('chp_symptom_logs', JSON.stringify(state.symptomLogs));
+                    localStorage.setItem('chp_firstaid', JSON.stringify(state.firstAidState));
+
+                    renderMonthlyLogs();
+                    renderSymptomLogs();
+                    renderFirstAidGrid();
+                    updateDashCount();
+                    alert("Backup restored successfully!");
+                } catch(err) {
+                    alert("Invalid JSON Backup File.");
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>
